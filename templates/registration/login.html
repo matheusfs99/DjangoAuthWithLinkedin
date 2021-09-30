@@ -5,6 +5,8 @@
 
 {% block body %}
 
+<a href="{% url 'home' %}">voltar</a>
+
 <h1>Login Here</h1>
 
 <form action="{% url 'login' %}" method="POST" novalidate>
@@ -12,5 +14,10 @@
     {{ form.as_p }}
     <input type="submit" value="Login" />
 </form>
+
+<ul>
+    <li><a href="{% url 'social:begin' 'linkedin-oauth2' %}?next={% url 'cadastro' %}?user={{ request.user }}">Signin With Linkedin</a></li>
+    <li><a href="{% url 'cadastro' %}">Cadastre-se</a></li>
+</ul>
 
 {% endblock %}

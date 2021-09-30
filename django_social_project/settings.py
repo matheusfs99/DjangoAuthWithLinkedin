@@ -26,7 +26,7 @@ SECRET_KEY = 'm_ad$(-hg+43_bm(v$0@fga$(ge_)9!#goj(xafwj-snvw$&5f'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 
 # Application definition
@@ -65,6 +65,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'social_django.context_processors.backends',
+                'social_django.context_processors.login_redirect',
             ],
         },
     },
@@ -72,6 +74,58 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'django_social_project.wsgi.application'
 
+
+# CACHES
+def get_cache():
+    import os
+    try:
+        servers = os.environ['MEMCACHIER_SERVERS']
+        username = os.environ['MEMCACHIER_USERNAME']
+        password = os.environ['MEMCACHIER_PASSWORD']
+        return {
+            'default': {
+                'BACKEND': 'django.core.cache.backends.memcached.PyLibMCCache',
+                # TIMEOUT is not the connection timeout! It's the default expiration
+                # timeout that should be applied to keys! Setting it to `None`
+                # disables expiration.
+                'TIMEOUT': None,
+                'LOCATION': servers,
+                'OPTIONS': {
+                    'binary': True,
+                    'username': username,
+                    'password': password,
+                    'behaviors': {
+                        # Enable faster IO
+                        'no_block': True,
+                        'tcp_nodelay': True,
+                        # Keep connection alive
+                        'tcp_keepalive': True,
+                        # Timeout settings
+                        'connect_timeout': 2000,  # ms
+                        'send_timeout': 750 * 1000,  # us
+                        'receive_timeout': 750 * 1000,  # us
+                        '_poll_timeout': 2000,  # ms
+                        # Better failover
+                        'ketama': True,
+                        'remove_failed': 1,
+                        'retry_timeout': 2,
+                        'dead_timeout': 30,
+                    }
+                }
+            },
+            'database': {
+                'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+                'LOCATION': 'dlegal_cache_table', }
+        }
+    except:
+        return {
+            'default': {
+                'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'
+            }
+        }
+
+
+CACHES = get_cache()
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
@@ -102,6 +156,17 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+
+AUTHENTICATION_BACKENDS = [
+    'social_core.backends.linkedin.LinkedinOAuth2',
+
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+SOCIAL_AUTH_LINKEDIN_OAUTH2_KEY = '78r7e1mgqygnz5'          # Client ID
+SOCIAL_AUTH_LINKEDIN_OAUTH2_SECRET = '1Q9q775MkD6XF9la'     # Client Secret
+
+SOCIAL_AUTH_FIELDS_STORED_IN_SESSION = ['cadastro']
 
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'

@@ -6,11 +6,15 @@
 
 {% if user.is_authenticated %}
 
-Welcome {{ user.username }}
+<h3>Welcome {{ user.username }}</h3>
+
+<a href="{% url 'logout' %}">logout</a>
 
 {% else %}
 
 <h3>Your are not authenticated</h3>
+
+<a href="{% url 'login' %}">login</a>
 
 {% endif %}
 
