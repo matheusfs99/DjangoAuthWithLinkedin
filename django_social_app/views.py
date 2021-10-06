@@ -2,6 +2,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.models import User
 
 from django_social_app.forms import CreatePersonForm, CreateUserForm
+from django_social_app.models import Person
 
 
 def create_user(request):
@@ -10,6 +11,12 @@ def create_user(request):
     data['form'] = form
     if request.user.is_authenticated:
         user = get_object_or_404(User, id=request.user.id)
+        try:
+            person = Person.objects.get(user=user)
+            if person:
+                return redirect('home')
+        except:
+            pass
         user_form = CreateUserForm(request.POST or None, instance=user)
     else:
         user_form = CreateUserForm(request.POST or None)
